@@ -98,8 +98,8 @@ function handleTheTrails(request, response){
     lat: request.query.latitude,
     lon: request.query.longitude,
     minLength: request.query.length,
-    minStars: request.query.stars,
-    maxResults: 10,
+    // minStars: request.query.stars,
+    // maxResults: 10,
   }
 
   // OK SUPERAGENT is taking the query params and adding them on the end of the URL on line 29
@@ -107,9 +107,8 @@ function handleTheTrails(request, response){
   superagent.get(url)
     .query(trailParams)
     .then(resultsFromTheSuperagent => {
-      console.log('These are the results from the Trails superagent:', resultsFromTheSuperagent.body.data);
-      let trailData = resultsFromTheSuperagent.body;
-      let bestTrails = trailData.data.map(bestOfTrails => {
+      console.log('These are the results from the Trails superagent:', resultsFromTheSuperagent.body.trails);
+      let bestTrails = resultsFromTheSuperagent.body.trails.map(bestOfTrails => {
         return new Trail(bestOfTrails);
       })
       response.send(bestTrails);
@@ -120,20 +119,20 @@ function handleTheTrails(request, response){
 
 }
 
-function Location(location, geoData){
+function Location (location, geoData){
   this.search_query = location;
   this.formatted_query = geoData[0].display_name;
   this.latitude = geoData[0].lat;
   this.longitude = geoData[0].lon;
 }
 
-function Weather(weatherInfo){
+function Weather (weatherInfo){
   this.forecast = weatherInfo.weather.description;
   this.time = new Date(weatherInfo.valid_date).toDateString();
   // weatherArray.push(this);
 }
 
-function Trail(obj){
+function Trail (obj){
   this.name = obj.name;
   this.location = obj.location;
   this.length = obj.length;
@@ -142,8 +141,8 @@ function Trail(obj){
   this.summary = obj.summary;
   this.trail_url = obj.url;
   this.conditions = obj.conditionDetails;
-  this.condition_date = new Date(obj.conditionDate.slice(0,10)).toDateString();
-  this.condition_time = obj.conditionDate.slice(11, 19);
+  this.condition_date = obj.conditionDate;
+  this.condition_time = obj.condition_time;
 }
 
 app.get('*', (request, response) => {
