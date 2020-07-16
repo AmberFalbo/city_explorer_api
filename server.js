@@ -5,20 +5,20 @@ const express = require('express'); // my server library
 const cors = require('cors'); // the worst body guard
 const superagent = require('superagent'); // the in-between to and from APIs
 const pg = require('pg');
-
-
 require('dotenv').config(); // allows us to get into the .evn /secrets
 
 // tell express to use the libraries
 const app = express();
-const client = new pg.Client(process.env.DATABASE_URL);
-client.on('error', err => {
-  console.log('ERROR', err);
-});
 
 // Middleware
 
 app.use(cors());
+
+//set up pg
+const client = new pg.Client(process.env.DATABASE_URL);
+client.on('error', err => {
+  console.log('ERROR', err);
+});
 
 // global variables
 const PORT = process.env.PORT || 3001;
@@ -29,7 +29,7 @@ const PORT = process.env.PORT || 3001;
 // my route to see if it shows in terminal(console.log) and page to front end at (response.status) and (200) means good to go!
 // app.get('/bananas', (request, response) => {
 //   console.log('This is B A N A N A S');
-//   response.status(200).send('this is super BANANAS yup!');
+//   response.status(200).send('Alive bananas!');
 // })
 
 // routes
@@ -38,6 +38,35 @@ app.get('/location', handleTheLocation);
 app.get('/weather', handleTheWeather);
 app.get('/trails', handleTheTrails);
 app.get('/table', handleTableData);
+// app.get('/yelp', handleYelp);
+
+// function handleYelp(request, response){
+
+//   const numPerPage = 2;
+//   const page = request.query.page || 5;
+//   const start = ((page -1) * numPerPage + 1);
+
+//   const url = 'https://api.yelp.com/v3/businesses/search'
+
+//   const queryParams = {
+//     lat: request.query.latitude
+//     lon: request.query.longitude
+//     start: start,
+//     count: numPerPage,
+//   }
+
+//   superagent.get(url)
+//     .set('user-key', process.env.YELP_API_KEY) //'user-key or whatever yelp wants//
+//     .query(queryParams)
+//     .then(results => {
+//       const resultsArray = results.body.food;
+//       console.log('this is what we get in our results array', resultsArray);
+//       const yelpData = resultsArray.map(eatery => new YelpData(eatery));
+//       response.status(200).send(yelpData);
+//     })
+
+
+// }
 
 function handleTheLocation(request, response){
   // this is where the request is coming from
@@ -78,11 +107,12 @@ function handleTheLocation(request, response){
 
             // and save it to the database
 
-            let sql = 'INSERT INTO location (search_query, formatted_query, latitidue, longitdude) VALUES ($1, $2, $3, $4;)';
+            let sql = 'INSERT INTO location (search_query, formatted_query, latitude, longitude) VALUES ($1, $2, $3, $4)';
 
             let safeValues = [obj.search_query, obj.formatted_query, obj.latitude, obj.longitude];
 
             client.query(sql, safeValues);
+
 
             response.status(200).send(obj);
           }).catch((error) => {
