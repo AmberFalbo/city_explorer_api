@@ -5,7 +5,7 @@ const express = require('express'); // my server library
 const cors = require('cors'); // the worst body guard
 const superagent = require('superagent'); // the in-between to and from APIs
 const pg = require('pg');
-const { request, response } = require('express');
+
 
 require('dotenv').config(); // allows us to get into the .evn /secrets
 
@@ -175,7 +175,7 @@ function Trail (obj){
   this.condition_time = obj.condition_time;
 }
 
-funcion handleTableData(request, response){
+function handleTableData(request, response){
   let sql = 'SELECT * FROM locations;';
   client.query(sql)
     .then(resultsFromPostgres => {
@@ -183,7 +183,6 @@ funcion handleTableData(request, response){
       response.send(data);
     }).catch(err => console.log(err));
 }
-
 
 app.get('*', (request, response) => {
   response.status(404).send('Sorry you are not allowed to view this page yet!');
