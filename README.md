@@ -109,23 +109,24 @@ Finish time: 9pm
 
 Actual time needed to complete: 2hrs
 
+Day 3
 
-Number and name of feature: ________________________________
+Number and name of feature: #1 Database
 
-Estimate of time needed to complete: _____
+Estimate of time needed to complete: 1hr
 
-Start time: _____
+Start time: 2:30pm
 
-Finish time: _____
+Finish time: 3:30pm
 
-Actual time needed to complete: _____
+Actual time needed to complete: 1hr
 
 
-Number and name of feature: ________________________________
+Number and name of feature: #2 Server
 
-Estimate of time needed to complete: _____
+Estimate of time needed to complete: 2hrs
 
-Start time: _____
+Start time: 2:30pm
 
 Finish time: _____
 
