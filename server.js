@@ -11,15 +11,18 @@ require('dotenv').config(); // allows us to get into the .evn /secrets
 
 // tell express to use the libraries
 const app = express();
-app.use(cors());
-
 const client = new pg.Client(process.env.DATABASE_URL);
 client.on('error', err => {
   console.log('ERROR', err);
 });
 
+// Middleware
+
+app.use(cors());
+
 // global variables
 const PORT = process.env.PORT || 3001;
+
 // global weather Array
 // const weatherArray = [];
 
@@ -41,36 +44,56 @@ function handleTheLocation(request, response){
   let city = request.query.city;
   // the URL of our locations api
   let url = 'https://us1.locationiq.com/v1/search.php'
-
   let queryParams = {
     key: process.env.GEO_DATA_API_KEY,
     q: city, // referring back to line 27
     format: 'json',
     limit: 1
   }
+  // when a user searched for a city, we want to first check to see if that city is in the database
+  let sql = 'SELECT * FROM location WHERE search_query=$1;';
+  let safeValues = [city];
 
-  // OK SUPERAGENT is taking the query params and adding them on the end of the URL on line 29
-  // the .then gets the results of the entire URL
-  superagent.get(url)
-    .query(queryParams)
-    .then(resultsFromTheSuperagent => {
-      console.log('These are the results from the Location superagent:', resultsFromTheSuperagent.body);
-      let geoData = resultsFromTheSuperagent.body;
-      const obj = new Location(city, geoData);
-      response.status(200).send(obj);
+  client.query(sql, safeValues)
+    .then(resultsFromPostgres => {
+      console.log(resultsFromPostgres);
+      if(resultsFromPostgres.rowCount){
+        console.log('found location object in the database!');
+        // this means that the city is in the database and I need to return the location object from here
+        let locationObject = resultsFromPostgres.rows[0];
+        response.status(200).send(locationObject);
 
-      let sql = 'INSERT INTO locations (city, formatted_query, latitude, longitude) VALUES ($1, $2, $3, $4) RETURNING id;';
-      let safeValues = [obj.search_query, obj.formatted_query, obj.latitude, obj.longitude];
 
-      client.query(sql, safeValues)
-        .then(resultsFromPostgres => {
-          let id = resultsFromPostgres.rows;
-          console.log('id', id)
-        })
-    }).catch((error) => {
-      console.log('ERROR', error);
-      response.status(500).send('Error in Location!! Sorry we broke it!');
-    });
+      } else {
+        console.log('did not find location object in the database -- going to locationIQ to get it');
+        // this means that the city is NOT in the database and I need to go to LocationIQ to get the data
+        // OK SUPERAGENT is taking the query params and adding them on the end of the URL on line 29
+        // the .then gets the results of the entire URL
+        superagent.get(url)
+          .query(queryParams)
+          .then(resultsFromTheSuperagent => {
+            // console.log('These are the results from the Location superagent:', resultsFromTheSuperagent.body);
+            let geoData = resultsFromTheSuperagent.body;
+            const obj = new Location(city, geoData);
+
+            // and save it to the database
+
+            let sql = 'INSERT INTO location (search_query, formatted_query, latitidue, longitdude) VALUES ($1, $2, $3, $4;)';
+
+            let safeValues = [obj.search_query, obj.formatted_query, obj.latitude, obj.longitude];
+
+            client.query(sql, safeValues);
+
+            response.status(200).send(obj);
+          }).catch((error) => {
+            console.log('ERROR', error);
+            response.status(500).send('Error in Location!! Sorry we broke it!');
+          });
+
+      }
+    })
+
+
 }
 
 
