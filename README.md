@@ -72,60 +72,61 @@ Estimate of time needed to complete: 2hrs
 
 Start time: 2:30pm
 
-Finish time: _____
+Finish time: 4:30pm
 
-Actual time needed to complete: _____
-
-
-Number and name of feature: ________________________________
-
-Estimate of time needed to complete: _____
-
-Start time: _____
-
-Finish time: _____
-
-Actual time needed to complete: _____
+Actual time needed to complete: 2hrs
 
 
-Number and name of feature: ________________________________
+Number and name of feature: #2 Locations
 
-Estimate of time needed to complete: _____
+Estimate of time needed to complete: 1hr
 
-Start time: _____
+Start time: 4:30pm
 
-Finish time: _____
+Finish time: 5:30pm
 
-Actual time needed to complete: _____
-
-
-Number and name of feature: ________________________________
-
-Estimate of time needed to complete: _____
-
-Start time: _____
-
-Finish time: _____
-
-Actual time needed to complete: _____
+Actual time needed to complete: 1hr
 
 
-Number and name of feature: ________________________________
+Number and name of feature: #3 Weather
 
-Estimate of time needed to complete: _____
+Estimate of time needed to complete: 2hrs
 
-Start time: _____
+Start time: 5:30pm
 
-Finish time: _____
+Finish time: 7pm
 
-Actual time needed to complete: _____
+Actual time needed to complete: 1.5 hrs
 
 
-Number and name of feature: ________________________________
+Number and name of feature: #4 Trails
 
-Estimate of time needed to complete: _____
+Estimate of time needed to complete: 2hrs
 
-Start time: _____
+Start time: 7pm
+
+Finish time: 9pm
+
+Actual time needed to complete: 2hrs
+
+Day 3
+
+Number and name of feature: #1 Database
+
+Estimate of time needed to complete: 1hr
+
+Start time: 2:30pm
+
+Finish time: 3:30pm
+
+Actual time needed to complete: 1hr
+
+
+Number and name of feature: #2 Server
+
+Estimate of time needed to complete: 2hrs
+
+Start time: 2:30pm
 
 Finish time: _____
 

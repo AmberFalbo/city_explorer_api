@@ -4,12 +4,19 @@
 const express = require('express'); // my server library
 const cors = require('cors'); // the worst body guard
 const superagent = require('superagent'); // the in-between to and from APIs
+const pg = require('pg');
+const { request, response } = require('express');
 
 require('dotenv').config(); // allows us to get into the .evn /secrets
 
 // tell express to use the libraries
 const app = express();
 app.use(cors());
+
+const client = new pg.Client(process.env.DATABASE_URL);
+client.on('error', err => {
+  console.log('ERROR', err);
+});
 
 // global variables
 const PORT = process.env.PORT || 3001;
@@ -22,7 +29,12 @@ const PORT = process.env.PORT || 3001;
 //   response.status(200).send('this is super BANANAS yup!');
 // })
 
+// routes
+
 app.get('/location', handleTheLocation);
+app.get('/weather', handleTheWeather);
+app.get('/trails', handleTheTrails);
+app.get('/table', handleTableData);
 
 function handleTheLocation(request, response){
   // this is where the request is coming from
@@ -45,7 +57,16 @@ function handleTheLocation(request, response){
       console.log('These are the results from the Location superagent:', resultsFromTheSuperagent.body);
       let geoData = resultsFromTheSuperagent.body;
       const obj = new Location(city, geoData);
-      response.send(obj);
+      response.status(200).send(obj);
+
+      let sql = 'INSERT INTO locations (city, formatted_query, latitude, longitude) VALUES ($1, $2, $3, $4) RETURNING id;';
+      let safeValues = [obj.search_query, obj.formatted_query, obj.latitude, obj.longitude];
+
+      client.query(sql, safeValues)
+        .then(resultsFromPostgres => {
+          let id = resultsFromPostgres.rows;
+          console.log('id', id)
+        })
     }).catch((error) => {
       console.log('ERROR', error);
       response.status(500).send('Error in Location!! Sorry we broke it!');
@@ -53,7 +74,17 @@ function handleTheLocation(request, response){
 }
 
 
-app.get('/weather', handleTheWeather);
+
+// function showAllNames(request, response){
+//   // get everything from the table and send it to the front end
+//   let sql = 'SELECT * FROM people;';
+//   client.query(sql)
+//     .then(resultsFromPostgres => {
+//       let names = resultsFromPostgres.rows;
+//       response.send(names);
+//     }).catch(err => console.log(err));
+
+// }
 
 function handleTheWeather(request, response){
  
@@ -77,7 +108,7 @@ function handleTheWeather(request, response){
       let weatherDays = weatherData.data.map(dayOfWeather => {
         return new Weather(dayOfWeather);
       })
-      response.send(weatherDays);
+      response.status(200).send(weatherDays);
     }).catch((error) => {
       console.log('ERROR', error);
       response.status(500).send('Error in Weather!! Sorry we broke it!');
@@ -86,10 +117,9 @@ function handleTheWeather(request, response){
 }
 
 
-app.get('/trails', handleTheTrails);
 
 function handleTheTrails(request, response){
- 
+
   // the URL of our locations api
   let url = 'https://www.hikingproject.com/data/get-trails'
 
@@ -111,7 +141,7 @@ function handleTheTrails(request, response){
       let bestTrails = resultsFromTheSuperagent.body.trails.map(bestOfTrails => {
         return new Trail(bestOfTrails);
       })
-      response.send(bestTrails);
+      response.status(200).send(bestTrails);
     }).catch((error) => {
       console.log('ERROR', error);
       response.status(500).send('Error in Trails!! Sorry we broke it!');
@@ -145,11 +175,22 @@ function Trail (obj){
   this.condition_time = obj.condition_time;
 }
 
+funcion handleTableData(request, response){
+  let sql = 'SELECT * FROM locations;';
+  client.query(sql)
+    .then(resultsFromPostgres => {
+      let data = resultsFromPostgres.rows;
+      response.send(data);
+    }).catch(err => console.log(err));
+}
+
+
 app.get('*', (request, response) => {
   response.status(404).send('Sorry you are not allowed to view this page yet!');
 });
 
 // turn on the PORT!
-app.listen(PORT, () => {
-  console.log(`listening on ${PORT}`);
-});
+client.connect()
+  .then(() => {
+    app.listen(PORT, () => console.log(`listening on ${PORT}`));
+  }).catch(err => console.log('ERROR', err));
