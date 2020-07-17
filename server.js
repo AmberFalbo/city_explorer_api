@@ -66,31 +66,34 @@ function handletheMovies(request, response){
 
 
 
-function handleYelp(request, response){ç
+function handleYelp(request, response){
 
-  const numPerPage = 2;
-  const page = request.query.page || 5;
+  const numPerPage = 5;
+  const page = request.query.page || 1;
   const start = ((page -1) * numPerPage + 1);
 
   const url = 'https://api.yelp.com/v3/businesses/search'
 
   const queryParams = {
-    lat: request.query.latitude
-    lon: request.query.longitude
+    latitude: request.query.latitude,
+    longitude: request.query.longitude,
     start: start,
     count: numPerPage,
+    limit: '5',
   }
 
   superagent.get(url)
-    .set('user-key', process.env.YELP_API_KEY) //'user-key or whatever yelp wants//
+    .set({'Authorization':`Bearer ${process.env.YELP_API_KEY}`}) //'user-key or whatever yelp wants//
     .query(queryParams)
     .then(results => {
-      const resultsArray = results.body.food;
-      console.log('this is what we get in our results array', resultsArray);
+      const resultsArray = results.body.businesses;
+      console.log('this is what we get in our YELP results array', resultsArray);
       const yelpData = resultsArray.map(eatery => new YelpData(eatery));
       response.status(200).send(yelpData);
-    })
-
+    }).catch((error) => {
+      console.log('ERROR', error);
+      response.status(500).send('Error in YELP!! Sorry we broke it!');
+    });
 
 }
 
@@ -261,6 +264,14 @@ function Movies(obj) {
   this.image_url = `https://image.tmdb.org/t/p/original${obj.poster_path}`
   this.popularity = obj.popularity
   this.released_on = obj.release_date
+}
+
+function YelpData(obj) {
+  this.name = obj.name
+  this.image_url = obj.image_url
+  this.price = obj.price
+  this.rating = obj.rating
+  this.url = obj.url
 }
 
 function handleTableData(request, response){
