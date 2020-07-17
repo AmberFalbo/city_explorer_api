@@ -70,16 +70,15 @@ function handleYelp(request, response){
 
   const numPerPage = 5;
   const page = request.query.page || 1;
-  const start = ((page -1) * numPerPage + 1);
+  const start = ((page -1) * numPerPage);
 
   const url = 'https://api.yelp.com/v3/businesses/search'
 
   const queryParams = {
     latitude: request.query.latitude,
     longitude: request.query.longitude,
-    start: start,
-    count: numPerPage,
-    limit: '5',
+    offset: start,
+    limit: numPerPage,
   }
 
   superagent.get(url)
