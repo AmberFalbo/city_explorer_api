@@ -38,49 +38,69 @@ app.get('/location', handleTheLocation);
 app.get('/weather', handleTheWeather);
 app.get('/trails', handleTheTrails);
 app.get('/table', handleTableData);
-// app.get('/yelp', handleYelp);
-
-// function handleYelp(request, response){
-
-//   const numPerPage = 2;
-//   const page = request.query.page || 5;
-//   const start = ((page -1) * numPerPage + 1);
-
-//   const url = 'https://api.yelp.com/v3/businesses/search'
-
-//   const queryParams = {
-//     lat: request.query.latitude
-//     lon: request.query.longitude
-//     start: start,
-//     count: numPerPage,
-//   }
-
-//   superagent.get(url)
-//     .set('user-key', process.env.YELP_API_KEY) //'user-key or whatever yelp wants//
-//     .query(queryParams)
-//     .then(results => {
-//       const resultsArray = results.body.food;
-//       console.log('this is what we get in our results array', resultsArray);
-//       const yelpData = resultsArray.map(eatery => new YelpData(eatery));
-//       response.status(200).send(yelpData);
-//     })
+app.get('/yelp', handleYelp);
+app.get('/movies', handletheMovies);
 
 
-// }
+function handletheMovies(request, response){
+  let url = 'https://api.themoviedb.org/3/search/movie'
+
+  let queryParams = {
+    api_key: process.env.MOVIE_API_KEY,
+    query: request.query.search_query,
+  }
+  superagent.get(url)
+    .query(queryParams)
+    .then(resultsFromSuperagent => {
+      // console.log('Results from the SuperAgent', resultsFromSuperagent);
+      let moviesArr = resultsFromSuperagent.body.results.map(route => {
+        return new Movies(route);
+      })
+      response.status(200).send(moviesArr);
+    }).catch((error) => {
+      console.log('ERROR', error);
+      response.status(500).send('Error in Movies!! Sorry we broke it!')
+    });
+
+}
+
+
+
+function handleYelp(request, response){
+
+  const numPerPage = 5;
+  const page = request.query.page || 1;
+  const start = ((page -1) * numPerPage);
+
+  const url = 'https://api.yelp.com/v3/businesses/search'
+
+  const queryParams = {
+    latitude: request.query.latitude,
+    longitude: request.query.longitude,
+    offset: start,
+    limit: numPerPage,
+  }
+
+  superagent.get(url)
+    .set({'Authorization':`Bearer ${process.env.YELP_API_KEY}`}) //'user-key or whatever yelp wants//
+    .query(queryParams)
+    .then(results => {
+      const resultsArray = results.body.businesses;
+      console.log('this is what we get in our YELP results array', resultsArray);
+      const yelpData = resultsArray.map(eatery => new YelpData(eatery));
+      response.status(200).send(yelpData);
+    }).catch((error) => {
+      console.log('ERROR', error);
+      response.status(500).send('Error in YELP!! Sorry we broke it!');
+    });
+
+}
 
 function handleTheLocation(request, response){
   // this is where the request is coming from
   let city = request.query.city;
-  // the URL of our locations api
-  let url = 'https://us1.locationiq.com/v1/search.php'
-  let queryParams = {
-    key: process.env.GEO_DATA_API_KEY,
-    q: city, // referring back to line 27
-    format: 'json',
-    limit: 1
-  }
   // when a user searched for a city, we want to first check to see if that city is in the database
-  let sql = 'SELECT * FROM location WHERE search_query=$1;';
+  let sql = 'SELECT * FROM locations WHERE search_query=$1;';
   let safeValues = [city];
 
   client.query(sql, safeValues)
@@ -92,8 +112,15 @@ function handleTheLocation(request, response){
         let locationObject = resultsFromPostgres.rows[0];
         response.status(200).send(locationObject);
 
-
       } else {
+        // the URL of our locations api
+        let url = 'https://us1.locationiq.com/v1/search.php'
+        let queryParams = {
+          key: process.env.GEO_DATA_API_KEY,
+          q: city, // referring back to line 27
+          format: 'json',
+          limit: 1
+        }
         console.log('did not find location object in the database -- going to locationIQ to get it');
         // this means that the city is NOT in the database and I need to go to LocationIQ to get the data
         // OK SUPERAGENT is taking the query params and adding them on the end of the URL on line 29
@@ -107,7 +134,7 @@ function handleTheLocation(request, response){
 
             // and save it to the database
 
-            let sql = 'INSERT INTO location (search_query, formatted_query, latitude, longitude) VALUES ($1, $2, $3, $4)';
+            let sql = 'INSERT INTO locations (search_query, formatted_query, latitude, longitude) VALUES ($1, $2, $3, $4)';
 
             let safeValues = [obj.search_query, obj.formatted_query, obj.latitude, obj.longitude];
 
@@ -226,6 +253,24 @@ function Trail (obj){
   this.conditions = obj.conditionDetails;
   this.condition_date = obj.conditionDate;
   this.condition_time = obj.condition_time;
+}
+
+function Movies(obj) {
+  this.title = obj.original_title
+  this.overview = obj.overview
+  this.average_votes = obj.vote_average
+  this.total_votes = obj.vote_count
+  this.image_url = `https://image.tmdb.org/t/p/original${obj.poster_path}`
+  this.popularity = obj.popularity
+  this.released_on = obj.release_date
+}
+
+function YelpData(obj) {
+  this.name = obj.name
+  this.image_url = obj.image_url
+  this.price = obj.price
+  this.rating = obj.rating
+  this.url = obj.url
 }
 
 function handleTableData(request, response){
