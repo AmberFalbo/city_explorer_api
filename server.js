@@ -256,21 +256,21 @@ function Trail (obj){
 }
 
 function Movies(obj) {
-  this.title = obj.original_title
-  this.overview = obj.overview
-  this.average_votes = obj.vote_average
-  this.total_votes = obj.vote_count
-  this.image_url = `https://image.tmdb.org/t/p/original${obj.poster_path}`
-  this.popularity = obj.popularity
-  this.released_on = obj.release_date
+  this.title = obj.original_title;
+  this.overview = obj.overview;
+  this.average_votes = obj.vote_average;
+  this.total_votes = obj.vote_count;
+  this.image_url = `https://image.tmdb.org/t/p/original${obj.poster_path}`;
+  this.popularity = obj.popularity;
+  this.released_on = obj.release_date;
 }
 
 function YelpData(obj) {
-  this.name = obj.name
-  this.image_url = obj.image_url
-  this.price = obj.price
-  this.rating = obj.rating
-  this.url = obj.url
+  this.name = obj.name;
+  this.image_url = obj.image_url;
+  this.price = obj.price;
+  this.rating = obj.rating;
+  this.url = obj.url;
 }
 
 function handleTableData(request, response){
