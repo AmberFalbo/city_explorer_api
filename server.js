@@ -167,7 +167,7 @@ function handleTheLocation(request, response){
 // }
 
 function handleTheWeather(request, response){
- 
+
   // the URL of our locations api
   let url = 'https://api.weatherbit.io/v2.0/forecast/daily'
 
